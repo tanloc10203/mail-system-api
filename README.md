@@ -29,9 +29,8 @@ Email system api is based on [Hexagonal Architecture](https://en.wikipedia.org/w
 - Implement swagger best practice
 - Implement Domain, Repository, Mapper, Controller
 
-## Hexagonal Architecture
 
-NestJS Boilerplate is based on [Hexagonal Architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)). This architecture is also known as Ports and Adapters.
+## Hexagonal Architecture
 
 ![Hexagonal Architecture Diagram](https://github.com/brocoders/nestjs-boilerplate/assets/6001723/6a6a763e-d1c9-43cc-910a-617cda3a71db)
 
