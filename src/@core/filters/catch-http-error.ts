@@ -9,6 +9,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { I18nContext } from 'nestjs-i18n';
 import { StatusCodeEnum } from '../enum';
 
 @Catch(HttpException)
@@ -22,7 +23,6 @@ export class CatchHttpError implements ExceptionFilter<HttpException> {
     const response = ctx.getResponse();
     const status = exception.getStatus();
     const responseException = exception.getResponse();
-
     const isDev =
       this.configService.getOrThrow('app.nodeEnv', {
         infer: true,

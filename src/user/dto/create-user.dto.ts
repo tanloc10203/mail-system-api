@@ -4,16 +4,20 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { UserStatusEnum } from '../user-status.enum';
+import { translateLang } from '@/@core/constants';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'test1@example.com', type: String })
   @Transform(lowerCaseTransformer)
-  @IsNotEmpty()
-  @IsEmail()
+  @IsNotEmpty({ message: translateLang.validation.NOT_EMPTY })
+  @IsEmail({}, { message: translateLang.validation.INVALID_EMAIL })
   email: string;
 
   @ApiProperty()
-  @MinLength(6)
+  @MinLength(6, {
+    message: i18nValidationMessage(translateLang.validation.MIN, { message: 'COOL' }),
+  })
   password?: string;
 
   provider?: string;
@@ -21,11 +25,11 @@ export class CreateUserDto {
   socialId?: string | null;
 
   @ApiProperty({ example: 'John', type: String })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: translateLang.validation.NOT_EMPTY })
   firstName: string | null;
 
   @ApiProperty({ example: 'Doe', type: String })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: translateLang.validation.NOT_EMPTY })
   lastName: string | null;
 
   @ApiPropertyOptional({ type: String })

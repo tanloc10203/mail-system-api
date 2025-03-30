@@ -12,6 +12,7 @@ Email system api is based on [Hexagonal Architecture](https://en.wikipedia.org/w
 
 ## Feature
 
+- [Translate lang system with i18n](https://nestjs-i18n.com/quick-start)
 - Register with email
 - Login with email
 - Get list email
@@ -28,6 +29,9 @@ Email system api is based on [Hexagonal Architecture](https://en.wikipedia.org/w
 - Connect mongoDB with mongoose
 - Implement swagger best practice
 - Implement Domain, Repository, Mapper, Controller
+- Translate lang error system
+- Interceptor Language
+- Add async local storage with nestjs-cls
 
 
 ## Hexagonal Architecture

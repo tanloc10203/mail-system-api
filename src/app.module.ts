@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MongooseConfigService } from './database/mongoose-config.service';
-import { ConfigModule } from '@nestjs/config';
-import databaseConfig from './database/config/database.config';
+import { ClsModule } from 'nestjs-cls';
+import {
+  HeaderResolver,
+  I18nModule
+} from 'nestjs-i18n';
+import * as path from 'path';
 import appConfig from './configs/app.config';
+import { AllConfig } from './configs/config.type';
+import databaseConfig from './database/config/database.config';
+import { MongooseConfigService } from './database/mongoose-config.service';
+import { UserModule } from './user/user.module';
 
 const infrastructureDatabaseModule = MongooseModule.forRootAsync({
   useClass: MongooseConfigService,
@@ -15,10 +22,43 @@ const infrastructureConfigModule = ConfigModule.forRoot({
   load: [appConfig, databaseConfig],
 });
 
+const infrastructureI18nModule = I18nModule.forRootAsync({
+  useFactory: (configService: ConfigService<AllConfig>) => ({
+    fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', {
+      infer: true,
+    }),
+    loaderOptions: { path: path.join(__dirname, '/i18n/'), watch: true },
+  }),
+  resolvers: [
+    {
+      use: HeaderResolver,
+      useFactory: (configService: ConfigService<AllConfig>) => {
+        return [
+          configService.get('app.headerLanguage', {
+            infer: true,
+          }),
+        ];
+      },
+      inject: [ConfigService],
+    },
+  ],
+  imports: [ConfigModule],
+  inject: [ConfigService],
+});
+
+const infrastructureClsModule = ClsModule.forRoot({
+  global: true,
+  middleware: {
+    mount: true,
+  },
+});
+
 @Module({
   imports: [
     infrastructureConfigModule,
     infrastructureDatabaseModule,
+    infrastructureI18nModule,
+    infrastructureClsModule,
     UserModule,
   ],
 })

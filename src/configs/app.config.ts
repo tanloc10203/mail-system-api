@@ -44,6 +44,14 @@ class EnvironmentVariablesValidator {
   @IsUrl({ require_tld: false })
   @IsOptional()
   FRONTEND_DOMAIN: string;
+
+  @IsString()
+  @IsOptional()
+  APP_FALLBACK_LANGUAGE: string;
+
+  @IsString()
+  @IsOptional()
+  APP_HEADER_LANGUAGE: string;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -56,5 +64,7 @@ export default registerAs<AppConfig>('app', () => {
     backendDomain: process.env.BACKEND_DOMAIN ?? 'http://localhost:3000',
     frontendDomain: process.env.FRONTEND_DOMAIN,
     appName: process.env.APP_NAME ?? 'Mail System Api',
+    fallbackLanguage: process.env.APP_FALLBACK_LANGUAGE || 'en',
+    headerLanguage: process.env.APP_HEADER_LANGUAGE || 'x-custom-lang',
   };
 });

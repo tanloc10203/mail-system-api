@@ -5,4 +5,6 @@ export type AppConfig = {
   appName: string;
   backendDomain: string;
   frontendDomain?: string;
+  fallbackLanguage: string;
+  headerLanguage: string;
 };

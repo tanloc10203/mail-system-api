@@ -1,0 +1,8 @@
+{
+  "JSON_INVALID": "Invalid JSON data. Please check the syntax.",
+  "UNEXPECTED_ERROR": "An unexpected error occurred. Please try again later.",
+  "VALIDATION_FAILED": "The input data is invalid.",
+  "SYNTAX_ERROR": "Syntax error in the system. Please contact the administrator.",
+  "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later.",
+  "ALREADY_EXISTS": "{property} already exists."
+}

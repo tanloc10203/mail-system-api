@@ -1,16 +1,22 @@
+import { translateLang } from '@/@core/constants';
+import { StatusCodeEnum } from '@/@core/enum';
 import { ConflictExceptionCore } from '@/@core/exceptions';
 import { AuthProvidersEnum } from '@/auth/auth-providers.enum';
 import { RoleEnum } from '@/role/role.enum';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import { I18nService } from 'nestjs-i18n';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRepository } from './infrastructure/persistence';
 import { UserStatusEnum } from './user-status.enum';
-import { StatusCodeEnum } from '@/@core/enum';
+import { ContextProvider } from '@/@core/providers';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly i18nService: I18nService,
+  ) {}
 
   async create(createProfileDto: CreateUserDto) {
     const userObjectExists = await this.userRepository.findByEmail(
@@ -18,11 +24,24 @@ export class UserService {
     );
 
     if (userObjectExists) {
+      const language = ContextProvider.getLanguage();
+
+      console.log(`language`, language);
+
+      const message = this.i18nService.t(translateLang.system.ALREADY_EXISTS, {
+        args: {
+          property: this.i18nService.t(translateLang.key.email, {
+            lang: language,
+          }),
+        },
+        lang: language,
+      });
+
       throw new ConflictExceptionCore({
-        message: 'Email already exists',
+        message: message,
         code: StatusCodeEnum.ConflictError,
         details: {
-          email: 'Email already exists',
+          email: message,
         },
       });
     }

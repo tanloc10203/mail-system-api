@@ -1,0 +1,9 @@
+{
+  "email": "Email",
+  "password": "Mật khẩu",
+  "firstName": "Tên",
+  "lastName": "Họ và chữ lót",
+  "photo": "Hình",
+  "role": "Quyền hạn",
+  "status": "Trang thái"
+}
