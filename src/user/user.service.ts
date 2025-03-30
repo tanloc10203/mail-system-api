@@ -1,15 +1,18 @@
 import { translateLang } from '@/@core/constants';
 import { StatusCodeEnum } from '@/@core/enum';
 import { ConflictExceptionCore } from '@/@core/exceptions';
+import { ContextProvider } from '@/@core/providers';
 import { AuthProvidersEnum } from '@/auth/auth-providers.enum';
 import { RoleEnum } from '@/role/role.enum';
+import { IPaginationOptions } from '@/utils/types';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { I18nService } from 'nestjs-i18n';
+import { User } from './domain/user';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FilterUserDto, SortUserDto } from './dto/query-user.dto';
 import { UserRepository } from './infrastructure/persistence';
 import { UserStatusEnum } from './user-status.enum';
-import { ContextProvider } from '@/@core/providers';
 
 @Injectable()
 export class UserService {
@@ -25,8 +28,6 @@ export class UserService {
 
     if (userObjectExists) {
       const language = ContextProvider.getLanguage();
-
-      console.log(`language`, language);
 
       const message = this.i18nService.t(translateLang.system.ALREADY_EXISTS, {
         args: {
@@ -63,6 +64,25 @@ export class UserService {
       role: createProfileDto.role ?? RoleEnum.user,
       socialId: createProfileDto.socialId ?? undefined,
       status: createProfileDto.status ?? UserStatusEnum.inactive,
+    });
+  }
+
+  findManyWithPagination({
+    filterOptions,
+    sortOptions,
+    paginationOptions,
+  }: {
+    filterOptions?: FilterUserDto | null;
+    sortOptions?: SortUserDto[] | null;
+    paginationOptions: IPaginationOptions;
+  }): Promise<{
+    data: User[];
+    total: number;
+  }> {
+    return this.userRepository.findManyWithPagination({
+      filterOptions,
+      sortOptions,
+      paginationOptions,
     });
   }
 }

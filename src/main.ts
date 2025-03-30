@@ -12,9 +12,7 @@ import { useContainer } from 'class-validator';
 import * as morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { CatchHttpError, CatchValidationError } from './@core';
-import {
-  ResolvePromisesInterceptor
-} from './@core/interceptor/';
+import { ResolvePromisesInterceptor } from './@core/interceptor/';
 import { AppModule } from './app.module';
 import { AllConfig } from './configs/config.type';
 import validationOptions from './utils/validation-options';
@@ -28,8 +26,7 @@ async function bootstrap() {
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfig>);
-  const i18nService =
-    app.get<I18nService<Record<string, unknown>>>(I18nService);
+  const i18nService = app.get<I18nService<Record<string, unknown>>>(I18nService);
 
   const apiPrefix = configService.getOrThrow('app.apiPrefix', { infer: true });
   const port = configService.getOrThrow('app.port', { infer: true });
@@ -72,9 +69,7 @@ async function bootstrap() {
     .setDescription('API docs')
     .setVersion('1.0')
     .addBearerAuth()
-    .addApiKey(
-      { type: 'apiKey', name: headerLanguage, in: 'header' },
-    )
+    .addApiKey({ type: 'apiKey', name: headerLanguage, in: 'header' })
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

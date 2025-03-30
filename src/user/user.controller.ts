@@ -1,16 +1,18 @@
+import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
+import { AcceptLang, UseLanguageInterceptor } from '@/@core/interceptor';
 import { ErrorResponse } from '@/utils/types';
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import {
   ApiCreatedResponse,
-  ApiHeader,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
-  ApiTags,
+  ApiTags
 } from '@nestjs/swagger';
 import { User } from './domain/user';
 import { CreateUserDto } from './dto/create-user.dto';
+import { QueryUserDto } from './dto/query-user.dto';
 import { UserService } from './user.service';
-import { AcceptLang, UseLanguageInterceptor } from '@/@core/interceptor';
 
 @ApiTags('Users')
 @Controller({
@@ -37,7 +39,52 @@ export class UserController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseLanguageInterceptor()
-  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
-    return this.userService.create(createProfileDto);
+  async create(@Body() createProfileDto: CreateUserDto) {
+    return apiResponse({
+      metadata: await this.userService.create(createProfileDto),
+      message: 'User created successfully',
+    });
+  }
+
+  @ApiOkResponse({
+    type: CoreApiResponse(User),
+  })
+  @ApiOperation({
+    summary: 'Get all users',
+    description: 'Get all users',
+  })
+  // @SerializeOptions({
+  //   groups: ['admin'],
+  // })
+  @AcceptLang()
+  @UseLanguageInterceptor()
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async findAll(@Query() query: QueryUserDto) {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 10;
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    const response = await this.userService.findManyWithPagination({
+      filterOptions: query?.filters,
+      sortOptions: query?.sort,
+      paginationOptions: {
+        page,
+        limit,
+      },
+    });
+
+    return apiResponse({
+      metadata: response.data,
+      message: 'Get all users successfully',
+      options: {
+        page,
+        limit,
+        total: response.total,
+        totalPage: Math.ceil(response.total / limit),
+      },
+    });
   }
 }
