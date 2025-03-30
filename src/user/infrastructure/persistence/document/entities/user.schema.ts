@@ -1,9 +1,9 @@
 import { AuthProvidersEnum } from '@/auth/auth-providers.enum';
+import { SoftDeleteDocumentHelper } from '@/helpers/entities';
 import { RoleEnum } from '@/role/role.enum';
 import { UserStatusEnum } from '@/user/user-status.enum';
-import { EntityDocumentHelper } from '@/utils/entity-document-helper';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, now } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 
@@ -14,7 +14,7 @@ export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
     getters: true,
   },
 })
-export class UserSchemaClass extends EntityDocumentHelper {
+export class UserSchemaClass extends SoftDeleteDocumentHelper {
   @Prop({
     type: String,
     unique: true,
@@ -61,15 +61,6 @@ export class UserSchemaClass extends EntityDocumentHelper {
     default: UserStatusEnum.inactive,
   })
   status?: number;
-
-  @Prop({ default: now })
-  createdAt: Date;
-
-  @Prop({ default: now })
-  updatedAt: Date;
-
-  @Prop({ default: now })
-  deletedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserSchemaClass);

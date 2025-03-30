@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
+import { TimestampDocument } from './timestamp-document';
 
-export class EntityDocumentHelper {
+export class EntityDocumentHelper extends TimestampDocument {
   @Transform(
     (value) => {
       if ('value' in value) {
