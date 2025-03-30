@@ -1,3 +1,4 @@
+import { ErrorResponse } from '@/utils/types';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -5,10 +6,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserService } from './user.service';
 import { User } from './domain/user';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ErrorResponse } from '@/utils/types';
+import { UserService } from './user.service';
 
 @ApiTags('Users')
 @Controller({
@@ -33,7 +33,7 @@ export class UserController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createProfileDto: CreateUserDto): Promise<string> {
+  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
     return this.userService.create(createProfileDto);
   }
 }

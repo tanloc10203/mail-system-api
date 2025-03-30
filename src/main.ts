@@ -1,19 +1,20 @@
 import 'dotenv/config';
 import { ConsoleLogger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
+import * as morgan from 'morgan';
 import { AppModule } from './app.module';
 import { AllConfig } from './configs/config.type';
 import validationOptions from './utils/validation-options';
-import { CatchEverythingFilter } from './utils/filters/catch-every-thing.filter';
+import { CatchHttpError, CatchValidationError } from './@core';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: new ConsoleLogger({
       prefix: 'System',
-    })
+    }),
   });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
@@ -37,7 +38,12 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix, { exclude: ['/'] });
   app.enableVersioning({ type: VersioningType.URI });
   app.useGlobalPipes(new ValidationPipe(validationOptions));
-  app.useGlobalFilters(new CatchEverythingFilter(app.get(HttpAdapterHost)));
+  app.use(morgan('dev'));
+
+  app.useGlobalFilters(
+    new CatchHttpError(configService),
+    new CatchValidationError(configService),
+  );
 
   const options = new DocumentBuilder()
     .setTitle(appName)

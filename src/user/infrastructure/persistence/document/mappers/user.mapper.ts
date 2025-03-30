@@ -7,7 +7,7 @@ export class UserMapper {
 
     domainEntity.id = raw._id.toString();
     domainEntity.email = raw.email;
-    domainEntity.password = raw.password;
+    // domainEntity.password = raw.password;
     domainEntity.provider = raw.provider;
     domainEntity.socialId = raw.socialId;
     domainEntity.firstName = raw.firstName;

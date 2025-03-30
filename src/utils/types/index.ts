@@ -4,3 +4,4 @@ export * from './or-never.type';
 export * from './deep-partial.type';
 export * from './pagination-options';
 export * from './error-response.type';
+export * from './exception.type';

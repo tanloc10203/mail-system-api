@@ -8,6 +8,7 @@ import { HydratedDocument } from 'mongoose';
 export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 
 @Schema({
+  collection: 'users',
   timestamps: true,
   toJSON: {
     virtuals: true,
