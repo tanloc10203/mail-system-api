@@ -7,7 +7,16 @@ export class ResolvePromisesInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       map((data) => {
-        const metadata = 'metadata' in data ? data.metadata : data;
+
+        if(!data) {
+          return {
+            metadata: null,
+            message: 'Successfully',
+            options: null
+          }
+        }
+
+        const metadata = data && 'metadata' in data ? data.metadata : data;
         const message = 'message' in data ? data.message : 'Successfully';
         const options = 'options' in data ? data.options : null;
 

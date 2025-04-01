@@ -1,18 +1,20 @@
 import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
 import { AcceptLang, UseLanguageInterceptor } from '@/@core/interceptor';
 import { ErrorResponse } from '@/utils/types';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
 import { User } from './domain/user';
 import { CreateUserDto } from './dto/create-user.dto';
-import { QueryUserDto } from './dto/query-user.dto';
+import { ParamIdDto, QueryUserDto } from './dto/query-user.dto';
 import { UserService } from './user.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('Users')
 @Controller({
@@ -86,5 +88,102 @@ export class UserController {
         totalPage: Math.ceil(response.total / limit),
       },
     });
+  }
+
+  @ApiOkResponse({
+    type: CoreApiResponse(User),
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation failed',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized',
+  })
+  @ApiOperation({
+    summary: 'Get user by id',
+    description: 'Get user by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  @AcceptLang()
+  @UseLanguageInterceptor()
+  @Get(':id')
+  findById( @Query('id') id: ParamIdDto['id']) {
+    return this.userService.findById(id);
+  }
+
+  @ApiOkResponse({
+    type: CoreApiResponse(User),
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation failed',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Email already exists',
+  })
+  @ApiOperation({
+    summary: 'Update user by id',
+    description: 'Update user by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  @AcceptLang()
+  @UseLanguageInterceptor()
+  @Patch(':id')
+  update(@Param('id') id: ParamIdDto['id'], @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(id, updateUserDto);
+  }
+
+  @ApiOkResponse({
+    type: CoreApiResponse(User),
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation failed',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized',
+  })
+  @ApiOperation({
+    summary: 'Delete user by id',
+    description: 'Delete user by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  @AcceptLang()
+  @UseLanguageInterceptor()
+  @Delete(':id')
+  remove(@Param('id') id: ParamIdDto['id']) {
+    return this.userService.remove(id);
   }
 }

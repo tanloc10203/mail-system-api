@@ -75,8 +75,9 @@ export class UserRepositoryDocument implements UserRepository {
     return userObject ? UserMapper.toDomain(userObject) : null;
   }
 
-  async remove(id: User['id']): Promise<void> {
-    await this.userModel.findByIdAndDelete(id).exec();
+  async remove(id: User['id']): Promise<boolean> {
+    const result = await this.userModel.findByIdAndDelete(id).exec();
+    return result !== null;
   }
 
   async update(id: User['id'], payload: Partial<User>): Promise<NullableType<User>> {

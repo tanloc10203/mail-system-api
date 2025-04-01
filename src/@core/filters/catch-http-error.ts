@@ -6,51 +6,55 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { I18nContext } from 'nestjs-i18n';
 import { StatusCodeEnum } from '../enum';
 
-@Catch(HttpException)
-export class CatchHttpError implements ExceptionFilter<HttpException> {
+@Catch()
+export class CatchHttpError implements ExceptionFilter {
   private readonly logger = new Logger(CatchHttpError.name);
 
   constructor(private readonly configService: ConfigService<AllConfig>) {}
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
-    const status = exception.getStatus();
-    const responseException = exception.getResponse();
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+    let responseException: Record<string, unknown> | null = null;
+    let details: Record<string, string> | null = null;
+    let errorCode: number = StatusCodeEnum.InternalServerError;
+    let message: string = 'Internal server error';
     const isDev =
       this.configService.getOrThrow('app.nodeEnv', {
         infer: true,
       }) === 'development';
+    let stack: string | null = null;
 
-    let details: Record<string, string> | null = null;
-    let errorCode: number = StatusCodeEnum.InternalServerError;
-    let message: string = exception.message;
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
 
-    if (
-      hasKeyWithType<Record<string, string>>(
-        responseException,
-        'details',
-        'object',
-      )
-    ) {
-      details = responseException.details;
-    }
+      responseException = exception.getResponse() as Record<string, unknown>;
+      stack = exception.stack as string;
+      message = exception.message;
 
-    if (
-      hasKeyWithType<number | undefined>(
-        responseException,
-        'errorCode',
-        'number',
-      ) &&
-      responseException.errorCode
-    ) {
-      errorCode = responseException.errorCode;
+      if (hasKeyWithType<Record<string, string>>(responseException, 'details', 'object')) {
+        details = responseException.details;
+      }
+
+      if (
+        hasKeyWithType<number | undefined>(responseException, 'errorCode', 'number') &&
+        responseException.errorCode
+      ) {
+        errorCode = responseException.errorCode;
+      }
+    } else {
+      if (exception instanceof Error) {
+        message = exception.message;
+        stack = exception.stack as string;
+      }
     }
 
     const responseJson: ErrorResponse = {
@@ -58,9 +62,10 @@ export class CatchHttpError implements ExceptionFilter<HttpException> {
       errorCode,
       message,
       details,
-      stack: isDev ? exception.stack : null,
+      stack: isDev ? stack : null,
     };
 
+    this.logger.error(message);
     this.logger.error('Catch http error', responseException);
 
     response.status(status).json(responseJson);

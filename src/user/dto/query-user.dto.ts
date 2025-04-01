@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   ValidateNested,
 } from 'class-validator';
 import { User } from '../domain/user';
@@ -56,4 +57,13 @@ export class QueryUserDto {
   @ValidateNested({ each: true })
   @Type(() => SortUserDto)
   sort?: SortUserDto[] | null;
+}
+
+export class ParamIdDto {
+  @ApiProperty()
+  @IsString()
+  @Matches(/^[0-9a-fA-F]{24}$/, {
+    message: 'id must be a valid mongoose ObjectId',
+  })
+  id: string;
 }
