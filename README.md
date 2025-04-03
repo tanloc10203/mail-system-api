@@ -18,6 +18,7 @@ Email system api is based on [Hexagonal Architecture](https://en.wikipedia.org/w
 - Get list email
 - Send email
 - Management user - Admin
+- Send email confirmation
 
 ## Responsibility
 
@@ -32,6 +33,8 @@ Email system api is based on [Hexagonal Architecture](https://en.wikipedia.org/w
 - Translate lang error system
 - Interceptor Language
 - Add async local storage with nestjs-cls
+- Implement JWT authentication
+- Implement setup mailer with nodemailer and handlebars template
 
 
 ## Hexagonal Architecture
