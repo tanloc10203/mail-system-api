@@ -11,6 +11,7 @@ import { MongooseConfigService } from './database/mongoose-config.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { MailerModule } from './mailer/mailer.module';
 import authConfig from './auth/config/auth.config';
 import mailConfig from './mail/config/mail.config';
 
@@ -63,6 +64,7 @@ const infrastructureClsModule = ClsModule.forRoot({
     UserModule,
     AuthModule,
     MailModule,
+    MailerModule,
   ],
 })
 export class AppModule {}
