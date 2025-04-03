@@ -59,6 +59,7 @@ export default registerAs<AppConfig>('app', () => {
 
   return {
     port: process.env.APP_PORT ? Number(process.env.APP_PORT) : 3000,
+    workingDirectory: process.env.PWD || process.cwd(),
     nodeEnv: process.env.NODE_ENV ?? Environment.Development,
     apiPrefix: process.env.API_PREFIX ?? 'api',
     backendDomain: process.env.BACKEND_DOMAIN ?? 'http://localhost:3000',

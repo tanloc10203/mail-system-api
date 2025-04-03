@@ -7,4 +7,5 @@ export type AppConfig = {
   frontendDomain?: string;
   fallbackLanguage: string;
   headerLanguage: string;
+  workingDirectory: string;
 };

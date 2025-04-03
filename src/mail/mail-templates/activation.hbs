@@ -1,0 +1,97 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>{{title}}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .logo {
+        max-width: 150px;
+        height: auto;
+      }
+      .content {
+        padding: 30px 0;
+      }
+      .button {
+        display: inline-block;
+        background-color: #4caf50;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .footer {
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+        font-size: 12px;
+        color: #777;
+        text-align: center;
+      }
+      .activation-code {
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 18px;
+        letter-spacing: 2px;
+        text-align: center;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='header'>
+      <img src='{{logoUrl}}' alt='Company Logo' class='logo' />
+      <h1>Welcome to {{companyName}}!</h1>
+    </div>
+
+    <div class='content'>
+      <p>Hello {{userName}},</p>
+
+      <p>Thank you for registering with us. To activate your account, please click the button below:</p>
+
+      <div style='text-align: center;'>
+        <a href='{{activationUrl}}' class='button'>Activate My Account</a>
+      </div>
+
+      <p>If the button doesn't work, you can also copy and paste the following link into your
+        browser:</p>
+      <p style='word-break: break-all;'><a href='{{activationUrl}}'>{{activationUrl}}</a></p>
+
+      <p>Alternatively, you can use this activation code:</p>
+      <div class='activation-code'>{{activationCode}}</div>
+
+      <p>This activation link and code will expire in {{expiryTime}} hours.</p>
+
+      <p>If you did not create an account with us, please ignore this email.</p>
+
+      <p>Best regards,<br />The {{companyName}} Team</p>
+    </div>
+
+    <div class='footer'>
+      <p>&copy; {{currentYear}} {{companyName}}. All rights reserved.</p>
+      <p>{{companyAddress}}</p>
+      <p>
+        <a href='{{privacyPolicyUrl}}'>Privacy Policy</a>
+        |
+        <a href='{{termsOfServiceUrl}}'>Terms of Service</a>
+        |
+        <a href='{{contactUrl}}'>Contact Us</a>
+      </p>
+    </div>
+  </body>
+</html>
