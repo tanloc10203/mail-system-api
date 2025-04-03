@@ -34,6 +34,9 @@ export class MailService {
       subject: 'Confirm your email',
       templatePath,
       context: {
+        activationCode: mailData.data.hash,
+        companyAddress: '123 Main St, Anytown USA',
+        logoUrl: `${frontendDomain}/assets/logo.png`,
         title: 'Confirm your email',
         companyName: appName,
         userName: `${mailData.data.firstName} ${mailData.data.lastName}`,

@@ -1,7 +1,7 @@
 import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
 import { AcceptLang, UseLanguageInterceptor } from '@/@core/interceptor';
 import { ErrorResponse } from '@/utils/types';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, SerializeOptions } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -55,9 +55,9 @@ export class UserController {
     summary: 'Get all users',
     description: 'Get all users',
   })
-  // @SerializeOptions({
-  //   groups: ['admin'],
-  // })
+  @SerializeOptions({
+    groups: ['admin', 'me'],
+  })
   @AcceptLang()
   @UseLanguageInterceptor()
   @Get()

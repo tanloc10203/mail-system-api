@@ -5,4 +5,5 @@ export type AuthConfig = {
   accessExpiresIn: ms.StringValue;
   confirmEmailExpiresIn: ms.StringValue;
   resetPasswordExpiresIn: ms.StringValue;
+  configEmailSecure: string;
 }

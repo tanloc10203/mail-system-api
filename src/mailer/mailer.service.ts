@@ -52,7 +52,7 @@ export class MailerService {
 
     await this.transport.sendMail({
       ...mailOptions,
-      from: mailOptions.from ? mailOptions.from : `${defaultName} <${defaultEmail}>`,
+      from: `${defaultName} <${defaultEmail}>`,
       html: mailOptions.html || html,
     });
   }

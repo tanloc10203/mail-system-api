@@ -6,11 +6,19 @@ import { AuthProvidersEnum } from './auth-providers.enum';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'node:crypto';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
-import { RoleEnum } from '@/role/role.enum';
+import { JwtService } from '@nestjs/jwt';
+import { MailService } from '@/mail/mail.service';
+import { ConfigService } from '@nestjs/config';
+import { AllConfig } from '@/configs/config.type';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private jwtService: JwtService,
+    private mailService: MailService,
+    private configService: ConfigService<AllConfig>,
+  ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto) {
     const user = await this.userService.findByEmail(loginDto.email);
@@ -72,10 +80,28 @@ export class AuthService {
 
   async register(registerDto: AuthRegisterLoginDto) {
     const user = await this.userService.create(registerDto);
+    const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
+    const expiresIn = this.configService.getOrThrow('auth.confirmEmailExpiresIn', { infer: true });
 
-    const hash = crypto
-     .createHash('sha256')
-     .update(crypto.randomBytes(32).toString())
-     .digest('hex');
+    const hash = await this.jwtService.signAsync(
+      {
+        confirmEmailUserId: user.id,
+      },
+      {
+        secret,
+        expiresIn,
+      },
+    );
+
+    await this.mailService.userSignUp({
+      to: user.email,
+      data: {
+        hash,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+      },
+    });
+
+    return true;
   }
 }

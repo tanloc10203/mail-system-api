@@ -14,6 +14,9 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   AUTH_RESET_PASSWORD_EXPIRES_IN: string;
+
+  @IsString()
+  AUTH_CONFIG_EMAIL_SECRET: string;
 }
 
 export default registerAs('auth', () => {
@@ -24,5 +27,6 @@ export default registerAs('auth', () => {
     accessExpiresIn: process.env.AUTH_ACCESS_EXPIRES_IN,
     confirmEmailExpiresIn: process.env.AUTH_CONFIRM_EMAIL_EXPIRES_IN,
     resetPasswordExpiresIn: process.env.AUTH_RESET_PASSWORD_EXPIRES_IN,
+    configEmailSecure: process.env.AUTH_CONFIG_EMAIL_SECRET,
   };
 });
