@@ -4,7 +4,7 @@ import { ConflictExceptionCore } from '@/@core/exceptions';
 import { ContextProvider } from '@/@core/providers';
 import { AuthProvidersEnum } from '@/auth/auth-providers.enum';
 import { RoleEnum } from '@/role/role.enum';
-import { IPaginationOptions } from '@/utils/types';
+import { IPaginationOptions, NullableType } from '@/utils/types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { I18nService } from 'nestjs-i18n';
@@ -93,6 +93,10 @@ export class UserService {
     }
 
     return userObject;
+  }
+
+  async findByEmail(email: User['email']): Promise<NullableType<User>> {
+    return this.userRepository.findByEmail(email);
   }
 
   async update(id: User['id'], payload: UpdateUserDto): Promise<User> {

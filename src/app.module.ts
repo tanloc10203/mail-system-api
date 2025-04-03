@@ -2,16 +2,17 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClsModule } from 'nestjs-cls';
-import {
-  HeaderResolver,
-  I18nModule
-} from 'nestjs-i18n';
+import { HeaderResolver, I18nModule } from 'nestjs-i18n';
 import * as path from 'path';
 import appConfig from './configs/app.config';
 import { AllConfig } from './configs/config.type';
 import databaseConfig from './database/config/database.config';
 import { MongooseConfigService } from './database/mongoose-config.service';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { MailModule } from './mail/mail.module';
+import authConfig from './auth/config/auth.config';
+import mailConfig from './mail/config/mail.config';
 
 const infrastructureDatabaseModule = MongooseModule.forRootAsync({
   useClass: MongooseConfigService,
@@ -19,7 +20,7 @@ const infrastructureDatabaseModule = MongooseModule.forRootAsync({
 
 const infrastructureConfigModule = ConfigModule.forRoot({
   isGlobal: true,
-  load: [appConfig, databaseConfig],
+  load: [appConfig, databaseConfig, authConfig, mailConfig],
 });
 
 const infrastructureI18nModule = I18nModule.forRootAsync({
@@ -60,6 +61,8 @@ const infrastructureClsModule = ClsModule.forRoot({
     infrastructureI18nModule,
     infrastructureClsModule,
     UserModule,
+    AuthModule,
+    MailModule,
   ],
 })
 export class AppModule {}
