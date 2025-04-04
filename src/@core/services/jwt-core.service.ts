@@ -7,7 +7,7 @@ import { StatusCodeEnum } from '../enum';
 export class JwtCoreService {
   constructor(private readonly jwt: JwtService) {}
 
-  generate<T extends Record<string, unknown>>({
+  generate<T extends object>({
     payload,
     secure,
     expiresIn,
@@ -20,7 +20,7 @@ export class JwtCoreService {
     });
   }
 
-  async validate<T extends Record<string, unknown>>({ secure, token }: IJwtVerifyToken) {
+  async validate<T extends object>({ secure, token }: IJwtVerifyToken) {
     try {
       const decoded = await this.jwt.verifyAsync(token, {
         secret: secure,

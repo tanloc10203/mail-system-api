@@ -1,5 +1,7 @@
+import { IJwtPayload } from './jwt-core.type';
+
 export interface IKeyPairCreatePayload {
   publicKey: string;
   privateKey: string;
-  payload: Record<string, unknown>;
+  payload: IJwtPayload;
 }

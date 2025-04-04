@@ -19,3 +19,33 @@ export class AuthEmailLoginDto {
   })
   password: string;
 }
+
+export class AuthEmailLoginResponseDto {
+  @ApiProperty({
+    example: {
+      accessToken: 'accessToken',
+      refreshToken: 'refreshToken',
+    },
+    type: Object,
+  })
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
+
+  @ApiProperty({
+    example: {
+      id: 'id',
+      email: 'email@gmail.com',
+      firstName: 'firstName',
+      lastName: 'lastName',
+    },
+    type: Object,
+  })
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+}

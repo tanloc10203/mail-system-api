@@ -1,17 +1,17 @@
 import { User } from '@/user/domain/user';
+import { FilterUserDto, SortUserDto } from '@/user/dto/query-user.dto';
 import { IPaginationOptions, NullableType } from '@/utils/types';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { UserRepository } from '../../user.repository';
-import { UserSchemaClass } from '../entities/user.schema';
+import { USER_DOCUMENT_NAME, UserSchemaClass } from '../entities/user.schema';
 import { UserMapper } from '../mappers/user.mapper';
-import { FilterUserDto, SortUserDto } from '@/user/dto/query-user.dto';
 
 @Injectable()
 export class UserRepositoryDocument implements UserRepository {
   constructor(
-    @InjectModel(UserSchemaClass.name)
+    @InjectModel(USER_DOCUMENT_NAME)
     private readonly userModel: Model<UserSchemaClass>,
   ) {}
 

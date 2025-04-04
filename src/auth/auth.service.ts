@@ -1,23 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
-import { UserService } from '@/user/user.service';
-import { UserStatusEnum } from '@/user/user-status.enum';
-import { AuthProvidersEnum } from './auth-providers.enum';
-import * as bcrypt from 'bcryptjs';
-import * as crypto from 'node:crypto';
-import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
-import { JwtService } from '@nestjs/jwt';
-import { MailService } from '@/mail/mail.service';
-import { ConfigService } from '@nestjs/config';
+import { GenerateCryptoService, JwtCoreService, KeyPairService } from '@/@core/services';
 import { AllConfig } from '@/configs/config.type';
+import { KeyStorageService } from '@/key-storage/key-storage.service';
+import { MailService } from '@/mail/mail.service';
+import { UserStatusEnum } from '@/user/user-status.enum';
+import { UserService } from '@/user/user.service';
+import { getInfo } from '@/utils/object';
+import { IJwtDecodeEmailVerify, IJwtPayload } from '@/utils/types';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcryptjs';
+import { AuthProvidersEnum } from './auth-providers.enum';
+import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
+import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private userService: UserService,
-    private jwtService: JwtService,
+    private jwtService: JwtCoreService,
     private mailService: MailService,
     private configService: ConfigService<AllConfig>,
+    private keyPairService: KeyPairService,
+    private cryptoService: GenerateCryptoService,
+    private keyStorageService: KeyStorageService,
   ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto) {
@@ -70,12 +77,37 @@ export class AuthService {
       });
     }
 
-    const hash = crypto
-      .createHash('sha256')
-      .update(crypto.randomBytes(32).toString())
-      .digest('hex');
+    const publicKey = this.cryptoService.generate(64);
+    const privateKey = this.cryptoService.generate(64);
 
-    return hash;
+    const jwtPayload: IJwtPayload = {
+      email: user.email,
+      sub: user.id,
+      role: user.role!,
+      iat: Math.floor(Date.now() / 1000),
+      jitClaim: this.cryptoService.randomUUID(),
+    };
+
+    const tokens = await this.keyPairService.create({
+      payload: jwtPayload,
+      publicKey,
+      privateKey,
+    });
+
+    const saveTokens = await this.keyStorageService.saveToken({
+      user: user.id,
+      publicKey,
+      privateKey,
+      jit: jwtPayload.jitClaim,
+      refreshToken: tokens.refreshToken,
+    });
+
+    this.logger.debug(`User ${user.email} logged in`, saveTokens);
+
+    return {
+      user: getInfo(user, ['id', 'email', 'firstName', 'lastName']),
+      tokens,
+    };
   }
 
   async register(registerDto: AuthRegisterLoginDto) {
@@ -83,15 +115,13 @@ export class AuthService {
     const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
     const expiresIn = this.configService.getOrThrow('auth.confirmEmailExpiresIn', { infer: true });
 
-    const hash = await this.jwtService.signAsync(
-      {
+    const hash = await this.jwtService.generate({
+      payload: {
         confirmEmailUserId: user.id,
       },
-      {
-        secret,
-        expiresIn,
-      },
-    );
+      secure: secret,
+      expiresIn,
+    });
 
     await this.mailService.userSignUp({
       to: user.email,
@@ -109,11 +139,10 @@ export class AuthService {
     const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
 
     try {
-      const payload = await this.jwtService.verifyAsync(hash, {
-        secret,
+      const payload = await this.jwtService.validate<IJwtDecodeEmailVerify>({
+        secure: secret,
+        token: hash,
       });
-
-      console.log(payload);
 
       if (!payload.confirmEmailUserId) {
         throw new UnauthorizedException({
@@ -207,15 +236,14 @@ export class AuthService {
 
     const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
     const expiresIn = this.configService.getOrThrow('auth.confirmEmailExpiresIn', { infer: true });
-    const hash = await this.jwtService.signAsync(
-      {
+
+    const hash = await this.jwtService.generate({
+      payload: {
         confirmEmailUserId: user.id,
       },
-      {
-        secret,
-        expiresIn,
-      },
-    );
+      secure: secret,
+      expiresIn,
+    });
 
     await this.mailService.userSignUp({
       to: user.email,

@@ -1,10 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
-import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
-import { AuthService } from './auth.service';
+import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
-import { apiResponse } from '@/@core/domain/api-response';
+import { AuthService } from './auth.service';
+import { AuthEmailLoginDto, AuthEmailLoginResponseDto } from './dto/auth-email-login.dto';
 import { AuthEmailVerifyDto } from './dto/auth-email-query.dto';
+import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { AuthResendEmailDto } from './dto/auth-resend-email.dto';
 
 @Controller('auth')
@@ -14,9 +14,11 @@ export class AuthController {
   @ApiOperation({
     summary: 'Login with email and password',
     description: 'Login with email and password',
+    tags: ['Auth'],
   })
   @ApiOkResponse({
     description: 'Login with email and password',
+    type: CoreApiResponse(AuthEmailLoginResponseDto),
   })
   @Post('email/login')
   @HttpCode(HttpStatus.OK)

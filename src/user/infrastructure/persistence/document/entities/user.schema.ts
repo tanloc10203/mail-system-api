@@ -8,7 +8,7 @@ import { HydratedDocument } from 'mongoose';
 export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 
 @Schema({
-  collection: 'users',
+  collection: 'Users',
   timestamps: true,
   toJSON: {
     virtuals: true,
@@ -64,4 +64,5 @@ export class UserSchemaClass extends SoftDeleteDocumentHelper {
   status?: number;
 }
 
+export const USER_DOCUMENT_NAME = 'User';
 export const UserSchema = SchemaFactory.createForClass(UserSchemaClass);

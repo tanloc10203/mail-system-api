@@ -15,6 +15,7 @@ import { MailerModule } from './mailer/mailer.module';
 import authConfig from './auth/config/auth.config';
 import mailConfig from './mail/config/mail.config';
 import { CoreModule } from './@core/core.module';
+import { KeyStorageModule } from './key-storage/key-storage.module';
 
 const infrastructureDatabaseModule = MongooseModule.forRootAsync({
   useClass: MongooseConfigService,
@@ -67,6 +68,7 @@ const infrastructureClsModule = ClsModule.forRoot({
     AuthModule,
     MailModule,
     MailerModule,
+    KeyStorageModule,
   ],
 })
 export class AppModule {}

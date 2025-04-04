@@ -6,4 +6,8 @@ export class GenerateCryptoService {
   generate(length = 32) {
     return crypto.randomBytes(length).toString('hex');
   }
+
+  randomUUID() {
+    return crypto.randomUUID();
+  }
 }
