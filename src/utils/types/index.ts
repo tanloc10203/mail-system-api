@@ -5,3 +5,5 @@ export * from './deep-partial.type';
 export * from './pagination-options';
 export * from './error-response.type';
 export * from './exception.type';
+export * from './key-pair.type';
+export * from './jwt-core.type';

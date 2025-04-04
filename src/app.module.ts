@@ -14,6 +14,7 @@ import { MailModule } from './mail/mail.module';
 import { MailerModule } from './mailer/mailer.module';
 import authConfig from './auth/config/auth.config';
 import mailConfig from './mail/config/mail.config';
+import { CoreModule } from './@core/core.module';
 
 const infrastructureDatabaseModule = MongooseModule.forRootAsync({
   useClass: MongooseConfigService,
@@ -61,6 +62,7 @@ const infrastructureClsModule = ClsModule.forRoot({
     infrastructureDatabaseModule,
     infrastructureI18nModule,
     infrastructureClsModule,
+    CoreModule,
     UserModule,
     AuthModule,
     MailModule,

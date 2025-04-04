@@ -104,4 +104,128 @@ export class AuthService {
 
     return true;
   }
+
+  async confirmEmail(hash: string) {
+    const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
+
+    try {
+      const payload = await this.jwtService.verifyAsync(hash, {
+        secret,
+      });
+
+      console.log(payload);
+
+      if (!payload.confirmEmailUserId) {
+        throw new UnauthorizedException({
+          message: 'Invalid hash',
+          details: {
+            hash: 'Invalid hash',
+          },
+        });
+      }
+
+      // check expiration date
+      if (payload.exp < Math.floor(Date.now() / 1000)) {
+        throw new UnauthorizedException({
+          message: 'Hash is expired',
+          details: {
+            hash: 'Hash is expired',
+          },
+        });
+      }
+
+      const user = await this.userService.findById(payload.confirmEmailUserId);
+
+      if (!user) {
+        throw new UnauthorizedException({
+          message: 'User not found',
+          details: {
+            email: 'User not found',
+          },
+        });
+      }
+
+      if (user.status === UserStatusEnum.active) {
+        throw new UnauthorizedException({
+          message: 'User is already active',
+          details: {
+            email: 'User is already active',
+          },
+        });
+      }
+
+      await this.userService.update(user.id, {
+        status: UserStatusEnum.active,
+      });
+
+      return true;
+    } catch (e) {
+      console.log(e);
+
+      // check if error is instance of JsonWebTokenError
+      if (e.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException({
+          message: 'Invalid hash verify',
+          details: {
+            hash: 'Invalid hash verify',
+          },
+        });
+      }
+
+      if (e.name === 'TokenExpiredError') {
+        throw new UnauthorizedException({
+          message: 'Hash is expired',
+          details: {
+            hash: 'Hash is expired',
+          },
+        });
+      }
+
+      throw e;
+    }
+  }
+
+  async resendConfirmEmail(email: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException({
+        message: 'User not found',
+        details: {
+          email: 'User not found',
+        },
+      });
+    }
+
+    if (user.status === UserStatusEnum.active) {
+      throw new UnauthorizedException({
+        message: 'User is already active',
+        details: {
+          email: 'User is already active',
+        },
+      });
+    }
+
+    const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
+    const expiresIn = this.configService.getOrThrow('auth.confirmEmailExpiresIn', { infer: true });
+    const hash = await this.jwtService.signAsync(
+      {
+        confirmEmailUserId: user.id,
+      },
+      {
+        secret,
+        expiresIn,
+      },
+    );
+
+    await this.mailService.userSignUp({
+      to: user.email,
+      data: {
+        hash,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+      },
+    });
+
+    return true;
+  }
 }

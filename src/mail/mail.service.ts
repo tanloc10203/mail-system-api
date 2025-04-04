@@ -13,12 +13,14 @@ export class MailService {
   ) {}
 
   async userSignUp(mailData: MailData<{ hash: string; firstName: string; lastName: string }>) {
-    const frontendDomain = this.configService.get('app.frontendDomain', { infer: true });
+    // const frontendDomain = this.configService.get('app.frontendDomain', { infer: true });
+    const frontendDomain = this.configService.get('app.backendDomain', { infer: true });
     const workingDirectory = this.configService.get('app.workingDirectory', { infer: true });
     const appName = this.configService.get('app.appName', { infer: true });
     const expiryTime = this.configService.get('auth.confirmEmailExpiresIn', { infer: true });
 
-    const url = new URL(frontendDomain + '/confirm-email');
+    // const url = new URL(frontendDomain + '/confirm-email');
+    const url = new URL(frontendDomain + '/auth/email/verify');
     url.searchParams.set('hash', mailData.data.hash);
 
     const templatePath = path.join(
