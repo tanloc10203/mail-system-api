@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import {
   ClassSerializerInterceptor,
   ConsoleLogger,
@@ -9,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
+import 'dotenv/config';
 import * as morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { CatchHttpError, CatchValidationError } from './@core';
@@ -18,10 +18,12 @@ import { AllConfig } from './configs/config.type';
 import validationOptions from './utils/validation-options';
 
 async function bootstrap() {
+  const logger = new ConsoleLogger({
+    prefix: 'System',
+  });
+
   const app = await NestFactory.create(AppModule, {
-    logger: new ConsoleLogger({
-      prefix: 'System',
-    }),
+    logger,
   });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
@@ -44,20 +46,25 @@ async function bootstrap() {
   app.enableCors({
     origin: frontendDomain,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: ['Content-Type', headerLanguage, 'Authorization'],
   });
   app.enableShutdownHooks();
   app.setGlobalPrefix(apiPrefix, { exclude: ['/'] });
   app.enableVersioning({ type: VersioningType.URI });
   app.useGlobalPipes(new ValidationPipe(validationOptions));
-  app.use(morgan('dev'));
+  app.use(
+    morgan('dev', {
+      stream: {
+        write: (message) => logger.debug(message),
+      },
+    }),
+  );
 
   app.useGlobalInterceptors(
     // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
     // https://github.com/typestack/class-transformer/issues/549
     new ResolvePromisesInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
-    new UserAgentDeviceInfoInterceptor()
+    new UserAgentDeviceInfoInterceptor(),
   );
 
   app.useGlobalFilters(
@@ -69,12 +76,38 @@ async function bootstrap() {
     .setTitle(appName)
     .setDescription('API docs')
     .setVersion('1.0')
-    .addBearerAuth()
-    .addApiKey({ type: 'apiKey', name: headerLanguage, in: 'header' })
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter JWT token',
+      },
+      'bearer' // Đặt tên cho security scheme
+    )
+    .addApiKey({ type: 'apiKey', name: headerLanguage, in: 'header' }, 'language')
+    .addApiKey({ type: 'apiKey', name: 'x-client-id', in: 'header' }, 'clientId')
+    .addApiKey({ type: 'apiKey', name: 'refresh-token', in: 'header' }, 'refreshToken')
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('docs', app, document);
+
+  // Apply security globally to all routes
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'list',
+      filter: true,
+      security: [
+        {
+          bearer: [],
+          language: [],
+          clientId: [],
+          refreshToken: []
+        }
+      ]
+    }
+  });
 
   await app.listen(port, () => {
     console.log(`Server running on ${backendDomain}`);

@@ -1,13 +1,14 @@
 import { UserAgent } from '@/@core/decorators';
 import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
 import { IUserAgentDevice } from '@/utils/types';
-import { Body, Controller, HttpCode, HttpStatus, Ip, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Ip, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiSecurity } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthEmailLoginDto, AuthEmailLoginResponseDto } from './dto/auth-email-login.dto';
 import { AuthEmailVerifyDto } from './dto/auth-email-query.dto';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { AuthResendEmailDto } from './dto/auth-resend-email.dto';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -79,6 +80,25 @@ export class AuthController {
     return apiResponse({
       metadata: await this.authService.resendConfirmEmail(resendDto.email),
       message: 'Resent email confirm successfully',
+    });
+  }
+
+  @ApiBearerAuth()
+  @ApiSecurity('clientId')
+  @ApiSecurity('refreshToken')
+  @ApiOperation({
+    summary: 'Get me',
+    description: 'Get me',
+  })
+  @ApiOkResponse({
+    description: 'Get me',
+  })
+  @UseGuards(AuthGuard)
+  @Get('me')
+  public getMe() {
+    return apiResponse({
+      metadata: 'Hello',
+      message: 'Get me successfully',
     });
   }
 }

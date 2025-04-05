@@ -11,4 +11,7 @@ export enum StatusCodeEnum {
   JwtTokenInvalidPayload = 401004,
   JwtTokenInvalidSecure = 401005,
   JwtTokenNotActive = 401006,
+
+  // Auth
+  AuthUnAuthorized = 401000,
 }
