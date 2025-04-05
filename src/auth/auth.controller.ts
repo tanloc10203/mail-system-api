@@ -1,5 +1,7 @@
+import { UserAgent } from '@/@core/decorators';
 import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { IUserAgentDevice } from '@/utils/types';
+import { Body, Controller, HttpCode, HttpStatus, Ip, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthEmailLoginDto, AuthEmailLoginResponseDto } from './dto/auth-email-login.dto';
@@ -22,9 +24,12 @@ export class AuthController {
   })
   @Post('email/login')
   @HttpCode(HttpStatus.OK)
-  public async login(@Body() loginDto: AuthEmailLoginDto) {
+  public async login(
+    @Body() loginDto: AuthEmailLoginDto,
+    @UserAgent() userAgent: IUserAgentDevice,
+  ) {
     return apiResponse({
-      metadata: await this.authService.validateLogin(loginDto),
+      metadata: await this.authService.validateLogin(loginDto, userAgent),
       message: 'User logged in successfully',
     });
   }

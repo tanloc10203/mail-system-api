@@ -1,8 +1,8 @@
 import { KeyStorage } from '@/key-storage/domain/key-storage';
-import { NullableType } from '@/utils/types';
+import { DeepPartial, NullableType } from '@/utils/types';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Mongoose } from 'mongoose';
+import { Model } from 'mongoose';
 import { KeyStorageRepository } from '../../key-storage.repository';
 import { KEY_STORAGE_DOCUMENT_NAME, KeyStorageSchemaClass } from '../entities/key-storage.schema';
 import { KeyStorageMapper } from '../mapper/key-storage.mapper';
@@ -15,18 +15,19 @@ export class KeyStorageRepositoryDocument implements KeyStorageRepository {
   ) {}
 
   async save(data: KeyStorage): Promise<NullableType<KeyStorage>> {
-    const filter = { user: data.user };
+    const persistenceModel = KeyStorageMapper.toPersistence(data);
+
+    const filter: DeepPartial<KeyStorageSchemaClass> = {
+      user: persistenceModel.user,
+      browser: persistenceModel.browser,
+      ipAddress: persistenceModel.ipAddress,
+      deviceName: persistenceModel.deviceName,
+      operatingSystem: persistenceModel.operatingSystem,
+      deviceType: persistenceModel.deviceType,
+    };
 
     const update = {
-      $set: {
-        privateKey: data.privateKey,
-        publicKey: data.publicKey,
-        refreshToken: data.refreshToken,
-        refreshTokensUsed: [],
-        lastLogin: new Date(),
-        jit: data.jit,
-        user: data.user,
-      },
+      $set: KeyStorageMapper.toPersistence(data),
     };
 
     const options = { upsert: true, new: true };

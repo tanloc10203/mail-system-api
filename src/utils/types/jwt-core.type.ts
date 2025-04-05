@@ -17,7 +17,7 @@ export interface IJwtPayload {
   /**
    * Just-in-time token
    */
-  jitClaim: string;
+  jit: string;
 
   /**
    * User id
@@ -42,7 +42,6 @@ export interface IJwtPayload {
 
 export interface IJwtDecode {
   exp: number;
-  jti: string;
 }
 
 export interface IJwtDecodeUser extends IJwtDecode, IJwtPayload {}

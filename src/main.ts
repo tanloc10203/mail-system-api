@@ -12,7 +12,7 @@ import { useContainer } from 'class-validator';
 import * as morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { CatchHttpError, CatchValidationError } from './@core';
-import { ResolvePromisesInterceptor } from './@core/interceptor/';
+import { ResolvePromisesInterceptor, UserAgentDeviceInfoInterceptor } from './@core/interceptor/';
 import { AppModule } from './app.module';
 import { AllConfig } from './configs/config.type';
 import validationOptions from './utils/validation-options';
@@ -57,6 +57,7 @@ async function bootstrap() {
     // https://github.com/typestack/class-transformer/issues/549
     new ResolvePromisesInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
+    new UserAgentDeviceInfoInterceptor()
   );
 
   app.useGlobalFilters(

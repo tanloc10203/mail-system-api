@@ -59,7 +59,7 @@ export class UserService {
       firstName: createProfileDto.firstName,
       lastName: createProfileDto.lastName,
       provider: createProfileDto.provider ?? AuthProvidersEnum.email,
-      photo: createProfileDto.photo,
+      photo: createProfileDto.photo ?? "",
       role: createProfileDto.role ?? RoleEnum.user,
       socialId: createProfileDto.socialId ?? undefined,
       status: createProfileDto.status ?? UserStatusEnum.inactive,

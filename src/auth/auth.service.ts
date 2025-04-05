@@ -4,8 +4,7 @@ import { KeyStorageService } from '@/key-storage/key-storage.service';
 import { MailService } from '@/mail/mail.service';
 import { UserStatusEnum } from '@/user/user-status.enum';
 import { UserService } from '@/user/user.service';
-import { getInfo } from '@/utils/object';
-import { IJwtDecodeEmailVerify, IJwtPayload } from '@/utils/types';
+import { IJwtDecodeEmailVerify, IJwtPayload, IUserAgentDevice } from '@/utils/types';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -27,7 +26,7 @@ export class AuthService {
     private keyStorageService: KeyStorageService,
   ) {}
 
-  async validateLogin(loginDto: AuthEmailLoginDto) {
+  async validateLogin(loginDto: AuthEmailLoginDto, userAgent: IUserAgentDevice) {
     const user = await this.userService.findByEmail(loginDto.email);
 
     if (!user) {
@@ -85,7 +84,7 @@ export class AuthService {
       sub: user.id,
       role: user.role!,
       iat: Math.floor(Date.now() / 1000),
-      jitClaim: this.cryptoService.randomUUID(),
+      jit: this.cryptoService.randomUUID(),
     };
 
     const tokens = await this.keyPairService.create({
@@ -98,14 +97,19 @@ export class AuthService {
       user: user.id,
       publicKey,
       privateKey,
-      jit: jwtPayload.jitClaim,
+      jit: jwtPayload.jit,
       refreshToken: tokens.refreshToken,
+      browser: userAgent.browser,
+      ipAddress: userAgent.ip,
+      operatingSystem: userAgent.os,
+      deviceType: userAgent.deviceType,
+      deviceName: userAgent.device,
     });
 
     this.logger.debug(`User ${user.email} logged in`, saveTokens);
 
     return {
-      user: getInfo(user, ['id', 'email', 'firstName', 'lastName']),
+      user,
       tokens,
     };
   }
@@ -138,80 +142,55 @@ export class AuthService {
   async confirmEmail(hash: string) {
     const secret = this.configService.getOrThrow('auth.configEmailSecure', { infer: true });
 
-    try {
-      const payload = await this.jwtService.validate<IJwtDecodeEmailVerify>({
-        secure: secret,
-        token: hash,
+    const payload = await this.jwtService.validate<IJwtDecodeEmailVerify>({
+      secure: secret,
+      token: hash,
+    });
+
+    if (!payload.confirmEmailUserId) {
+      throw new UnauthorizedException({
+        message: 'Invalid hash',
+        details: {
+          hash: 'Invalid hash',
+        },
       });
-
-      if (!payload.confirmEmailUserId) {
-        throw new UnauthorizedException({
-          message: 'Invalid hash',
-          details: {
-            hash: 'Invalid hash',
-          },
-        });
-      }
-
-      // check expiration date
-      if (payload.exp < Math.floor(Date.now() / 1000)) {
-        throw new UnauthorizedException({
-          message: 'Hash is expired',
-          details: {
-            hash: 'Hash is expired',
-          },
-        });
-      }
-
-      const user = await this.userService.findById(payload.confirmEmailUserId);
-
-      if (!user) {
-        throw new UnauthorizedException({
-          message: 'User not found',
-          details: {
-            email: 'User not found',
-          },
-        });
-      }
-
-      if (user.status === UserStatusEnum.active) {
-        throw new UnauthorizedException({
-          message: 'User is already active',
-          details: {
-            email: 'User is already active',
-          },
-        });
-      }
-
-      await this.userService.update(user.id, {
-        status: UserStatusEnum.active,
-      });
-
-      return true;
-    } catch (e) {
-      console.log(e);
-
-      // check if error is instance of JsonWebTokenError
-      if (e.name === 'JsonWebTokenError') {
-        throw new UnauthorizedException({
-          message: 'Invalid hash verify',
-          details: {
-            hash: 'Invalid hash verify',
-          },
-        });
-      }
-
-      if (e.name === 'TokenExpiredError') {
-        throw new UnauthorizedException({
-          message: 'Hash is expired',
-          details: {
-            hash: 'Hash is expired',
-          },
-        });
-      }
-
-      throw e;
     }
+
+    // check expiration date
+    if (payload.exp < Math.floor(Date.now() / 1000)) {
+      throw new UnauthorizedException({
+        message: 'Hash is expired',
+        details: {
+          hash: 'Hash is expired',
+        },
+      });
+    }
+
+    const user = await this.userService.findById(payload.confirmEmailUserId);
+
+    if (!user) {
+      throw new UnauthorizedException({
+        message: 'User not found',
+        details: {
+          email: 'User not found',
+        },
+      });
+    }
+
+    if (user.status === UserStatusEnum.active) {
+      throw new UnauthorizedException({
+        message: 'User is already active',
+        details: {
+          email: 'User is already active',
+        },
+      });
+    }
+
+    await this.userService.update(user.id, {
+      status: UserStatusEnum.active,
+    });
+
+    return true;
   }
 
   async resendConfirmEmail(email: string) {

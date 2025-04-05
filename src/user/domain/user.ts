@@ -18,6 +18,11 @@ export class User {
   email: string;
 
   @Exclude({ toPlainOnly: true })
+  @ApiProperty({
+    type: String,
+    description: 'Password (excluded from responses)',
+    writeOnly: true
+  })
   password?: string;
 
   @ApiProperty({

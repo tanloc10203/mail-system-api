@@ -7,3 +7,4 @@ export * from './error-response.type';
 export * from './exception.type';
 export * from './key-pair.type';
 export * from './jwt-core.type';
+export * from './user-agent.type';

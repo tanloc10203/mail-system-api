@@ -3,6 +3,6 @@ import { KeyStorage } from '../domain/key-storage';
 
 export abstract class KeyStorageRepository {
   abstract save(
-    data: Omit<KeyStorage, 'id' | 'refreshTokensUsed'>,
+    data: Omit<KeyStorage, 'id'>,
   ): Promise<NullableType<KeyStorage>>;
 }
