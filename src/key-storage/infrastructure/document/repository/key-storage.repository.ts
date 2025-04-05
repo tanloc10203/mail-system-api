@@ -1,5 +1,5 @@
 import { KeyStorage } from '@/key-storage/domain/key-storage';
-import { DeepPartial, NullableType } from '@/utils/types';
+import { DeepPartial, IUserAgentDevice, NullableType } from '@/utils/types';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -33,6 +33,21 @@ export class KeyStorageRepositoryDocument implements KeyStorageRepository {
     const options = { upsert: true, new: true };
 
     const keyStorage = await this.keyStorageModel.findOneAndUpdate(filter, update, options);
+
+    return keyStorage ? KeyStorageMapper.toDomain(keyStorage) : null;
+  }
+
+  async findByUserId(userId: string, deviceInfo: IUserAgentDevice): Promise<NullableType<KeyStorage>> {
+    const filter = {
+      user: userId,
+      browser: deviceInfo.browser,
+      ipAddress: deviceInfo.ip,
+      deviceName: deviceInfo.device,
+      operatingSystem: deviceInfo.os,
+      deviceType: deviceInfo.deviceType,
+    };
+
+    const keyStorage = await this.keyStorageModel.findOne(filter);
 
     return keyStorage ? KeyStorageMapper.toDomain(keyStorage) : null;
   }

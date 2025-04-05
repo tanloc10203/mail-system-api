@@ -14,4 +14,8 @@ export enum StatusCodeEnum {
 
   // Auth
   AuthUnAuthorized = 401000,
+  AuthMissingClientId = 401001,
+  AuthInvalidClientId = 401002,
+  AuthJitInvalid = 401003,
+  AuthDecodeInvalidClientId = 401004,
 }

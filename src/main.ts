@@ -12,7 +12,8 @@ import 'dotenv/config';
 import * as morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { CatchHttpError, CatchValidationError } from './@core';
-import { ResolvePromisesInterceptor, UserAgentDeviceInfoInterceptor } from './@core/interceptor/';
+import { ResolvePromisesInterceptor } from './@core/interceptor/';
+import { deviceInfoMiddleware } from './@core/middlewares';
 import { AppModule } from './app.module';
 import { AllConfig } from './configs/config.type';
 import validationOptions from './utils/validation-options';
@@ -58,13 +59,13 @@ async function bootstrap() {
       },
     }),
   );
+  app.use(deviceInfoMiddleware);
 
   app.useGlobalInterceptors(
     // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
     // https://github.com/typestack/class-transformer/issues/549
     new ResolvePromisesInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
-    new UserAgentDeviceInfoInterceptor(),
   );
 
   app.useGlobalFilters(
@@ -83,7 +84,7 @@ async function bootstrap() {
         bearerFormat: 'JWT',
         description: 'Enter JWT token',
       },
-      'bearer' // Đặt tên cho security scheme
+      'bearer',
     )
     .addApiKey({ type: 'apiKey', name: headerLanguage, in: 'header' }, 'language')
     .addApiKey({ type: 'apiKey', name: 'x-client-id', in: 'header' }, 'clientId')
@@ -103,10 +104,10 @@ async function bootstrap() {
           bearer: [],
           language: [],
           clientId: [],
-          refreshToken: []
-        }
-      ]
-    }
+          refreshToken: [],
+        },
+      ],
+    },
   });
 
   await app.listen(port, () => {

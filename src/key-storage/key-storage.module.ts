@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { KeyStorageService } from './key-storage.service';
 import { DocumentKeyStoragePersistenceModule } from './infrastructure';
+import { KeyStorageService } from './key-storage.service';
 
 @Module({
   imports: [DocumentKeyStoragePersistenceModule],

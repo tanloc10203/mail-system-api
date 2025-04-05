@@ -235,4 +235,19 @@ export class AuthService {
 
     return true;
   }
+
+  async getMe(userId: string) {
+    const user = await this.userService.findById(userId);
+    
+    if (!user) {
+      throw new UnauthorizedException({
+        message: 'User not found',
+        details: {
+          email: 'User not found',
+        },
+      });
+    }
+
+    return user;
+  }
 }
