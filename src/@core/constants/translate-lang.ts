@@ -26,5 +26,12 @@ export const translateLang = {
     photo: 'key.photo',
     role: 'key.role',
     status: 'key.status',
+  },
+
+  auth: {
+    UNAUTHORIZED: 'auth.UNAUTHORIZED',
+    INVALID_CLIENT_ID: 'auth.INVALID_CLIENT_ID',
+    INVALID_TOKEN: 'auth.INVALID_TOKEN',
+    INVALID_TOKEN_DECODED: 'auth.INVALID_TOKEN_DECODED',
   }
 } as const;

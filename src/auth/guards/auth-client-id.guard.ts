@@ -1,3 +1,4 @@
+import { translateLang } from '@/@core/constants';
 import { HeaderRequestAttachEnum, HeaderRequestEnum, StatusCodeEnum } from '@/@core/enum';
 import { UnAuthorizedExceptionCore } from '@/@core/exceptions';
 import { KeyStorageService } from '@/key-storage/key-storage.service';
@@ -19,7 +20,7 @@ export class AuthClientIdGuard implements CanActivate {
 
     if (!clientId) {
       throw new UnAuthorizedExceptionCore({
-        message: 'Vui lòng đăng nhập để tiếp tục',
+        message: translateLang.auth.UNAUTHORIZED,
         code: StatusCodeEnum.AuthMissingClientId,
       });
     }
@@ -30,7 +31,7 @@ export class AuthClientIdGuard implements CanActivate {
 
     if (!clientIdInStorage) {
       throw new UnAuthorizedExceptionCore({
-        message: 'Client ID không hợp lệ',
+        message: translateLang.auth.INVALID_CLIENT_ID,
         code: StatusCodeEnum.AuthInvalidClientId,
       });
     }

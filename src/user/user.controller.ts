@@ -1,5 +1,5 @@
 import { apiResponse, CoreApiResponse } from '@/@core/domain/api-response';
-import { AcceptLang, UseLanguageInterceptor } from '@/@core/interceptor';
+import { UseLanguageInterceptor } from '@/@core/interceptor';
 import { ErrorResponse } from '@/utils/types';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, SerializeOptions } from '@nestjs/common';
 import {
@@ -13,8 +13,8 @@ import {
 import { User } from './domain/user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ParamIdDto, QueryUserDto } from './dto/query-user.dto';
-import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 
 @ApiTags('Users')
 @Controller({
@@ -37,7 +37,6 @@ export class UserController {
     description: 'Validation failed',
     type: ErrorResponse,
   })
-  @AcceptLang()
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseLanguageInterceptor()
@@ -58,7 +57,6 @@ export class UserController {
   @SerializeOptions({
     groups: ['admin', 'me'],
   })
-  @AcceptLang()
   @UseLanguageInterceptor()
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -114,7 +112,6 @@ export class UserController {
     type: String,
     required: true,
   })
-  @AcceptLang()
   @UseLanguageInterceptor()
   @Get(':id')
   findById( @Query('id') id: ParamIdDto['id']) {
@@ -149,7 +146,6 @@ export class UserController {
     type: String,
     required: true,
   })
-  @AcceptLang()
   @UseLanguageInterceptor()
   @Patch(':id')
   update(@Param('id') id: ParamIdDto['id'], @Body() updateUserDto: UpdateUserDto) {
@@ -180,7 +176,6 @@ export class UserController {
     type: String,
     required: true,
   })
-  @AcceptLang()
   @UseLanguageInterceptor()
   @Delete(':id')
   remove(@Param('id') id: ParamIdDto['id']) {

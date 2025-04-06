@@ -4,7 +4,6 @@ import {
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
@@ -12,10 +11,10 @@ import 'dotenv/config';
 import * as morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { CatchHttpError, CatchValidationError } from './@core';
-import { ResolvePromisesInterceptor } from './@core/interceptor/';
+import { LanguageInterceptor, ResolvePromisesInterceptor } from './@core/interceptor/';
 import { deviceInfoMiddleware } from './@core/middlewares';
+import { EnvironmentService, TranslationService } from './@core/services';
 import { AppModule } from './app.module';
-import { AllConfig } from './configs/config.type';
 import validationOptions from './utils/validation-options';
 
 async function bootstrap() {
@@ -28,21 +27,11 @@ async function bootstrap() {
   });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  const configService = app.get(ConfigService<AllConfig>);
+  const environmentService = app.get(EnvironmentService);
   const i18nService = app.get<I18nService<Record<string, unknown>>>(I18nService);
 
-  const apiPrefix = configService.getOrThrow('app.apiPrefix', { infer: true });
-  const port = configService.getOrThrow('app.port', { infer: true });
-  const appName = configService.getOrThrow('app.appName', { infer: true });
-  const frontendDomain = configService.get('app.frontendDomain', {
-    infer: true,
-  });
-  const backendDomain = configService.getOrThrow('app.backendDomain', {
-    infer: true,
-  });
-  const headerLanguage = configService.getOrThrow('app.headerLanguage', {
-    infer: true,
-  });
+  const { apiPrefix, port, appName, frontendDomain, backendDomain, headerLanguage } =
+    environmentService;
 
   app.enableCors({
     origin: frontendDomain,
@@ -62,6 +51,7 @@ async function bootstrap() {
   app.use(deviceInfoMiddleware);
 
   app.useGlobalInterceptors(
+    new LanguageInterceptor(environmentService),
     // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
     // https://github.com/typestack/class-transformer/issues/549
     new ResolvePromisesInterceptor(),
@@ -69,8 +59,8 @@ async function bootstrap() {
   );
 
   app.useGlobalFilters(
-    new CatchHttpError(configService),
-    new CatchValidationError(configService, i18nService),
+    new CatchHttpError(environmentService, app.get(TranslationService)),
+    new CatchValidationError(environmentService, i18nService),
   );
 
   const options = new DocumentBuilder()

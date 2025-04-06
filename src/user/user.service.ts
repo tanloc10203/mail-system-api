@@ -1,47 +1,39 @@
 import { translateLang } from '@/@core/constants';
 import { StatusCodeEnum } from '@/@core/enum';
 import { ConflictExceptionCore } from '@/@core/exceptions';
-import { ContextProvider } from '@/@core/providers';
 import { AuthProvidersEnum } from '@/auth/auth-providers.enum';
 import { RoleEnum } from '@/role/role.enum';
+import { formatTranslate } from '@/utils/format-translate';
 import { IPaginationOptions, NullableType } from '@/utils/types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { I18nService } from 'nestjs-i18n';
 import { User } from './domain/user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FilterUserDto, SortUserDto } from './dto/query-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './infrastructure/persistence';
 import { UserStatusEnum } from './user-status.enum';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly i18nService: I18nService,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   async create(createProfileDto: CreateUserDto) {
     const userObjectExists = await this.userRepository.findByEmail(createProfileDto.email);
 
     if (userObjectExists) {
-      const language = ContextProvider.getLanguage();
-
-      const message = this.i18nService.t(translateLang.system.ALREADY_EXISTS, {
-        args: {
-          property: this.i18nService.t(translateLang.key.email, {
-            lang: language,
-          }),
+      const errorMessage = formatTranslate(translateLang.system.ALREADY_EXISTS, {
+        property: {
+          key: translateLang.key.email,
+          isTranslate: true,
         },
-        lang: language,
       });
 
       throw new ConflictExceptionCore({
-        message: message,
+        message: errorMessage,
         code: StatusCodeEnum.ConflictError,
         details: {
-          email: message,
+          email: errorMessage,
         },
       });
     }
@@ -59,7 +51,7 @@ export class UserService {
       firstName: createProfileDto.firstName,
       lastName: createProfileDto.lastName,
       provider: createProfileDto.provider ?? AuthProvidersEnum.email,
-      photo: createProfileDto.photo ?? "",
+      photo: createProfileDto.photo ?? '',
       role: createProfileDto.role ?? RoleEnum.user,
       socialId: createProfileDto.socialId ?? undefined,
       status: createProfileDto.status ?? UserStatusEnum.inactive,
@@ -119,21 +111,18 @@ export class UserService {
       const userObjectExists = await this.userRepository.findByEmail(payload.email);
 
       if (userObjectExists && userObjectExists.id !== id) {
-        const language = ContextProvider.getLanguage();
-        const message = this.i18nService.t(translateLang.system.ALREADY_EXISTS, {
-          args: {
-            property: this.i18nService.t(translateLang.key.email, {
-              lang: language,
-            }),
+        const errorMessage = formatTranslate(translateLang.system.ALREADY_EXISTS, {
+          property: {
+            key: translateLang.key.email,
+            isTranslate: true,
           },
-          lang: language,
         });
 
         throw new ConflictExceptionCore({
-          message: message,
+          message: errorMessage,
           code: StatusCodeEnum.ConflictError,
           details: {
-            email: message,
+            email: errorMessage,
           },
         });
       }
@@ -175,7 +164,7 @@ export class UserService {
       status,
     });
 
-    if(!userObjectUpdated) {
+    if (!userObjectUpdated) {
       throw new NotFoundException('User not found');
     }
 

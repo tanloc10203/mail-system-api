@@ -1,3 +1,4 @@
+import { translateLang } from '@/@core/constants';
 import { HeaderRequestAttachEnum, HeaderRequestEnum, StatusCodeEnum } from '@/@core/enum';
 import { UnAuthorizedExceptionCore } from '@/@core/exceptions';
 import { JwtCoreService } from '@/@core/services';
@@ -20,7 +21,7 @@ export class AuthTokenGuard implements CanActivate {
     if (!keyStorage) {
       this.logger.debug('KeyStorage is undefined or null');
       throw new UnAuthorizedExceptionCore({
-        message: 'Vui lòng đăng nhập để tiếp tục',
+        message: translateLang.auth.UNAUTHORIZED,
         code: StatusCodeEnum.AuthUnAuthorized,
       });
     }
@@ -31,7 +32,7 @@ export class AuthTokenGuard implements CanActivate {
 
     if (!authHeader) {
       throw new UnAuthorizedExceptionCore({
-        message: 'Vui lòng đăng nhập để tiếp tục',
+        message: translateLang.auth.UNAUTHORIZED,
         code: StatusCodeEnum.AuthUnAuthorized,
       });
     }
@@ -45,7 +46,7 @@ export class AuthTokenGuard implements CanActivate {
     // Check jit valid with keyStorage
     if (decodedToken.jit !== keyStorage.jit) {
       throw new UnAuthorizedExceptionCore({
-        message: 'Mã xác thực không hợp lệ',
+        message: translateLang.auth.INVALID_TOKEN,
         code: StatusCodeEnum.AuthJitInvalid,
       });
     }
@@ -53,7 +54,7 @@ export class AuthTokenGuard implements CanActivate {
     // Check userId valid with keyStorage
     if (decodedToken.sub !== keyStorage.user.toString()) {
       throw new UnAuthorizedExceptionCore({
-        message: 'Người dùng không hợp lệ',
+        message: translateLang.auth.INVALID_TOKEN_DECODED,
         code: StatusCodeEnum.AuthDecodeInvalidClientId,
       });
     }

@@ -50,19 +50,11 @@ const infrastructureI18nModule = I18nModule.forRootAsync({
   inject: [ConfigService],
 });
 
-const infrastructureClsModule = ClsModule.forRoot({
-  global: true,
-  middleware: {
-    mount: true,
-  },
-});
-
 @Module({
   imports: [
     infrastructureConfigModule,
     infrastructureDatabaseModule,
     infrastructureI18nModule,
-    infrastructureClsModule,
     CoreModule,
     UserModule,
     AuthModule,

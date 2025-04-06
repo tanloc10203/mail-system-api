@@ -1,4 +1,3 @@
-import { AllConfig } from '@/configs/config.type';
 import { normalizeArgsDto } from '@/utils/transformers/normalize-args-dto.transformer';
 import { ErrorResponse } from '@/utils/types';
 import {
@@ -6,56 +5,45 @@ import {
   Catch,
   ExceptionFilter,
   Logger,
-  UnprocessableEntityException
+  UnprocessableEntityException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { I18nService } from 'nestjs-i18n';
 import { translateLang } from '../constants';
 import { StatusCodeEnum } from '../enum';
+import { ContextProvider } from '../providers';
+import { EnvironmentService } from '../services';
+import { UseLanguageInterceptor } from '../interceptor';
 
+@UseLanguageInterceptor()
 @Catch(UnprocessableEntityException)
-export class CatchValidationError
-  implements ExceptionFilter<UnprocessableEntityException>
-{
+export class CatchValidationError implements ExceptionFilter<UnprocessableEntityException> {
   private readonly logger = new Logger(CatchValidationError.name);
 
   constructor(
-    private readonly configService: ConfigService<AllConfig>,
+    private readonly environmentService: EnvironmentService,
     private readonly i18n: I18nService,
   ) {}
 
   catch(exception: UnprocessableEntityException, host: ArgumentsHost) {
     const i18n = this.i18n;
-
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
     const status = exception.getStatus();
-    const responseException = exception.getResponse() as Record<
-      string,
-      string[]
-    >;
+    const responseException = exception.getResponse() as Record<string, string[]>;
+
+    const { headerLanguage, fallbackLanguage, isDevelopment } = this.environmentService;
 
     const lang =
-      request.headers[
-        this.configService.getOrThrow('app.headerLanguage', { infer: true })
-      ] ||
-      this.configService.getOrThrow('app.fallbackLanguage', { infer: true });
+      request.headers[headerLanguage] || ContextProvider.getLanguage() || fallbackLanguage;
 
     const body = request.body;
-
-    const isDev =
-      this.configService.getOrThrow('app.nodeEnv', {
-        infer: true,
-      }) === 'development';
 
     // parser error message
     const parserError: Record<string, string> = {};
 
     Object.keys(responseException).forEach(async (key) => {
-      const { args, key: keyName } = normalizeArgsDto(
-        responseException[key][0],
-      );
+      const { args, key: keyName } = normalizeArgsDto(responseException[key][0]);
 
       const propertyName = i18n.t(`key.${key}`, { lang });
 
@@ -67,11 +55,6 @@ export class CatchValidationError
         },
       }) as string;
 
-      // console.log(`${key}`, {
-      //   property: propertyName,
-      //   ...args,
-      // });
-
       parserError[key] = value;
     });
 
@@ -80,7 +63,7 @@ export class CatchValidationError
       errorCode: StatusCodeEnum.ValidateFailed,
       message: i18n.t(translateLang.system.VALIDATION_FAILED, { lang }),
       details: parserError,
-      stack: isDev ? exception.stack : null,
+      stack: isDevelopment ? exception.stack : null,
     };
 
     this.logger.error('CatchValidationError', parserError);
